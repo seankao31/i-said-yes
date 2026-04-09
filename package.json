@@ -1,0 +1,12 @@
+{
+  "name": "i-said-yes",
+  "private": true,
+  "scripts": {
+    "test": "bats test/"
+  },
+  "devDependencies": {
+    "bats": "latest",
+    "bats-assert": "latest",
+    "bats-support": "latest"
+  }
+}

@@ -33,7 +33,10 @@ if [ -f "$TRUST_FILE" ]; then
   done < <(jq -r '.[]' "$TRUST_FILE" 2>/dev/null)
 fi
 
-# Not trusted — inject context for Claude to offer trust
+# Not trusted — inject context for Claude to offer trust.
+# The context embeds the exact trust command with resolved absolute paths.
+# Without this, Claude improvises a multi-step file manipulation (Read, ls,
+# mkdir, Write) requiring ~5 approval prompts instead of 2.
 TRUST_CMD="$CLAUDE_PLUGIN_ROOT/scripts/cd-git-trust.sh"
 jq -n --arg cwd "$CWD_RESOLVED" --arg trust_file "$TRUST_FILE" --arg trust_cmd "$TRUST_CMD" '{
   hookSpecificOutput: {

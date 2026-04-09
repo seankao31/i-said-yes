@@ -18,6 +18,9 @@ CWD=$(echo "$INPUT" | jq -r '.cwd // empty')
 [ -z "$COMMAND" ] || [ -z "$CWD" ] && exit 0
 
 # --- Pattern gate: is this cd <path> && git <cmd>? ---
+# Pattern gate runs first despite trust being "gate 1" conceptually:
+# it's the cheapest check (pure regex, no I/O), and we need the regex
+# match to extract the cd target path for the subsequent gates.
 if [[ "$COMMAND" =~ ^cd[[:space:]]+(\"[^\"]+\"|\'[^\']+\'|[^[:space:]&]+)[[:space:]]*\&\&[[:space:]]*git[[:space:]] ]]; then
   TARGET="${BASH_REMATCH[1]}"
   # Strip quotes if present

@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/approve.sh"
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/cd-git-approve.sh"
           }
         ]
       }
@@ -17,7 +17,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/offer-trust.sh"
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/cd-git-offer-trust.sh"
           }
         ]
       }

@@ -1,12 +1,12 @@
 #!/bin/bash
-# Add a project path to the trusted-projects.json trust list.
+# Add a project path to the cd-git-trusted-projects.json trust list.
 # Creates the file and parent directory if they don't exist.
 # Skips duplicates silently.
 #
 # Usage: trust.sh <project-path> <trust-file-path>
 
-PROJECT_PATH="${1:?Usage: trust.sh <project-path> <trust-file-path>}"
-TRUST_FILE="${2:?Usage: trust.sh <project-path> <trust-file-path>}"
+PROJECT_PATH="${1:?Usage: cd-git-trust.sh <project-path> <trust-file-path>}"
+TRUST_FILE="${2:?Usage: cd-git-trust.sh <project-path> <trust-file-path>}"
 
 # Create parent directory if needed
 mkdir -p "$(dirname "$TRUST_FILE")"

@@ -1,12 +1,12 @@
 #!/bin/bash
 # PreToolUse hook: auto-approve "cd <path> && git <cmd>" when ALL of:
-#   1. Trust gate — project is in $CLAUDE_PLUGIN_DATA/trusted-projects.json
+#   1. Trust gate — project is in $CLAUDE_PLUGIN_DATA/cd-git-trusted-projects.json
 #   2. Pattern gate — command matches cd <path> && git <cmd>
 #   3. Same-repo gate — cd target shares git-common-dir with cwd
 #
 # All three must pass. Any failure defers to Claude Code's normal permission prompt.
 
-TRUST_FILE="$CLAUDE_PLUGIN_DATA/trusted-projects.json"
+TRUST_FILE="$CLAUDE_PLUGIN_DATA/cd-git-trusted-projects.json"
 
 INPUT=$(cat)
 TOOL=$(echo "$INPUT" | jq -r '.tool_name // empty')

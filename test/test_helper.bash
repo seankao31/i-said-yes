@@ -43,7 +43,7 @@ hook_input() {
 # Helper: add a path to the trust list
 trust_project() {
   local path="$1"
-  local trust_file="$CLAUDE_PLUGIN_DATA/trusted-projects.json"
+  local trust_file="$CLAUDE_PLUGIN_DATA/cd-git-trusted-projects.json"
   if [ -f "$trust_file" ]; then
     jq --arg p "$path" '. + [$p]' "$trust_file" > "${trust_file}.tmp"
     mv "${trust_file}.tmp" "$trust_file"

@@ -2,7 +2,7 @@
 
 load test_helper
 
-SCRIPT="$BATS_TEST_DIRNAME/../scripts/approve.sh"
+SCRIPT="$BATS_TEST_DIRNAME/../scripts/cd-git-approve.sh"
 
 # Helper: pipe input to script via run (for tests asserting empty output)
 run_script() {
@@ -63,7 +63,7 @@ run_script() {
   local repo
   repo="$TEST_TEMP/project"
   create_git_repo "$repo"
-  rm -f "$CLAUDE_PLUGIN_DATA/trusted-projects.json"
+  rm -f "$CLAUDE_PLUGIN_DATA/cd-git-trusted-projects.json"
 
   local input
   input=$(hook_input "Bash" "cd \"$repo\" && git status" "$repo")

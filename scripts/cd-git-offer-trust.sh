@@ -5,7 +5,7 @@
 # Fires right when Claude is composing its response, so the context is fresh.
 # States facts (not instructions) to avoid prompt injection detection.
 
-TRUST_FILE="$CLAUDE_PLUGIN_DATA/trusted-projects.json"
+TRUST_FILE="$CLAUDE_PLUGIN_DATA/cd-git-trusted-projects.json"
 
 INPUT=$(cat)
 TOOL=$(echo "$INPUT" | jq -r '.tool_name // empty')
@@ -34,7 +34,7 @@ if [ -f "$TRUST_FILE" ]; then
 fi
 
 # Not trusted — inject context for Claude to offer trust
-TRUST_CMD="$CLAUDE_PLUGIN_ROOT/scripts/trust.sh"
+TRUST_CMD="$CLAUDE_PLUGIN_ROOT/scripts/cd-git-trust.sh"
 jq -n --arg cwd "$CWD_RESOLVED" --arg trust_file "$TRUST_FILE" --arg trust_cmd "$TRUST_CMD" '{
   hookSpecificOutput: {
     hookEventName: "PostToolUse",

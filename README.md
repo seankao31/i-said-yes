@@ -1,22 +1,19 @@
-# i-said-yes
+# I Said Yes
+
+![DID I STUTTER?](https://github.com/user-attachments/assets/e1f70b41-3fa1-4b18-93e0-5aeab51c69d7)
+
+## What is this
 
 A Claude Code plugin that remembers your trust decisions. Approve once, auto-approve forever.
 
-## The problem
+Claude Code asks for permission every time it runs `cd <path> && git status` (or any compound cd+git command) to protect against bare repository attacks.
+In trusted personal projects, this means approving the same prompt dozens of times per session.
 
-Claude Code asks for permission every time it runs `cd <path> && git status` (or any compound cd+git command) to protect against bare repository attacks. In trusted personal projects, this means approving the same prompt dozens of times per session.
+No more "Compound commands with cd and git require approval to prevent bare repository attacks"
 
-## How it works
+## Getting Started
 
-The first time a cd+git command runs in a project, Claude asks if you want to trust it. Say yes, and future cd+git commands in that project are auto-approved — as long as they pass three security gates:
-
-1. **Trust gate** — Is this project in your trust list?
-2. **Pattern gate** — Is this a known-safe command pattern (`cd <path> && git <cmd>`)?
-3. **Same-repo gate** — Does `git rev-parse --git-common-dir` match between the cd target and the project root? This catches cd into nested malicious repos, submodules, or unrelated repositories.
-
-If any gate fails, Claude Code's normal permission prompt takes over.
-
-## Install
+### Install
 
 ```bash
 claude plugin add /path/to/i-said-yes
@@ -28,13 +25,23 @@ Or run with it temporarily:
 claude --plugin-dir /path/to/i-said-yes
 ```
 
-## Usage
+### Usage
 
 Just use Claude Code normally. When you run a cd+git command in an untrusted project, Claude will ask:
 
 > This project is not in the trusted git projects list. Would you like to trust it?
 
 Say yes. That's it — future cd+git commands in that project are auto-approved.
+
+## How it works
+
+The first time a cd+git command runs in a project, Claude asks if you want to trust it. Say yes, and future cd+git commands in that project are auto-approved — as long as they pass three security gates:
+
+1. **Trust gate** — Is this project in your trust list?
+2. **Pattern gate** — Is this a known-safe command pattern (`cd <path> && git <cmd>`)?
+3. **Same-repo gate** — Does `git rev-parse --git-common-dir` match between the cd target and the project root? This catches cd into nested malicious repos, submodules, or unrelated repositories.
+
+If any gate fails, Claude Code's normal permission prompt takes over.
 
 ## Trust storage
 

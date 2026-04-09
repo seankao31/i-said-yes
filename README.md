@@ -12,7 +12,7 @@ The first time a cd+git command runs in a project, Claude asks if you want to tr
 
 1. **Trust gate** — Is this project in your trust list?
 2. **Pattern gate** — Is this a known-safe command pattern (`cd <path> && git <cmd>`)?
-3. **Same-repo gate** — Does the cd target belong to the same git repo? (Prevents sneaky cd into nested malicious repos or submodules.)
+3. **Same-repo gate** — Does `git rev-parse --git-common-dir` match between the cd target and the project root? This catches cd into nested malicious repos, submodules, or unrelated repositories.
 
 If any gate fails, Claude Code's normal permission prompt takes over.
 

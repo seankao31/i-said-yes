@@ -34,10 +34,11 @@ if [ -f "$TRUST_FILE" ]; then
 fi
 
 # Not trusted — inject context for Claude to offer trust
-jq -n --arg cwd "$CWD_RESOLVED" --arg trust_file "$TRUST_FILE" '{
+TRUST_CMD="$CLAUDE_PLUGIN_ROOT/scripts/trust.sh"
+jq -n --arg cwd "$CWD_RESOLVED" --arg trust_file "$TRUST_FILE" --arg trust_cmd "$TRUST_CMD" '{
   hookSpecificOutput: {
     hookEventName: "PostToolUse",
-    additionalContext: ("[i-said-yes] This project (" + $cwd + ") is not in the trusted git projects list (" + $trust_file + "). That file is a JSON array of paths. Ask the user (via AskUserQuestion, yes/no) if they want to trust this project so future cd+git commands are auto-approved. Only trust projects the user owns — not third-party clones or repos with untrusted submodules. If yes, add the path to the JSON array.")
+    additionalContext: ("[i-said-yes] This project (" + $cwd + ") is not in the trusted git projects list. Ask the user (via AskUserQuestion, yes/no) if they want to trust this project so future compound commands with cd and git are auto-approved. Only trust projects the user owns — not third-party clones or repos with untrusted submodules. If yes, run: " + $trust_cmd + " \"" + $cwd + "\" \"" + $trust_file + "\"")
   }
 }'
 exit 0

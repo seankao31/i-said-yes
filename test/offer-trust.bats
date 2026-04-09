@@ -147,6 +147,22 @@ run_script() {
   [[ "$context" == *"trusted-projects.json"* ]]
 }
 
+# --- Trust command in context ---
+
+@test "context includes runnable trust command" {
+  local repo
+  repo="$TEST_TEMP/project"
+  create_git_repo "$repo"
+
+  local output
+  output=$(hook_input "Bash" "cd \"$repo\" && git status" "$repo" | "$SCRIPT")
+  local context
+  context=$(echo "$output" | jq -r '.hookSpecificOutput.additionalContext')
+
+  [[ "$context" == *"trust.sh"* ]]
+  [[ "$context" == *"run:"* ]]
+}
+
 # --- Edge cases ---
 
 @test "handles empty command gracefully" {

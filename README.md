@@ -6,7 +6,7 @@
 
 A Claude Code plugin that remembers your trust decisions. Approve once, auto-approve forever.
 
-Claude Code asks for permission every time it runs `cd <path> && git status` (or any compound cd+git command) to protect against bare repository attacks.
+Claude Code asks for permission every time it runs `cd <path> && git <cmd>` to protect against bare repository attacks.
 In trusted personal projects, this means approving the same prompt dozens of times per session.
 
 No more "Compound commands with cd and git require approval to prevent bare repository attacks"

@@ -94,9 +94,9 @@ The path check is subprocess-free and handles the common case (Claude operating 
 
 ### Known limitations
 
-The plugin's threat model assumes Claude itself is generating commands in a trusted user environment, not a malicious third party actively probing the trust gate. The following are known weaknesses against an active attacker; they are accepted because fixing them would not measurably help against the assumed threat.
+The plugin is an alternative to `claude --dangerously-skip-permissions` for users who are already operating in trusted repositories. That baseline sets the threat model: Claude itself is generating commands in a trusted user environment, not a malicious third party actively probing the trust gate. The following are known weaknesses against an active attacker; they are accepted because fixing them would not measurably raise the bar over the `--dangerously-skip-permissions` baseline users are already accepting.
 
-1. `git rev-parse --git-common-dir` honors `.git/commondir` blindly. A directory with a crafted `commondir` file can claim any common dir for the same-repo gate. Affects the same-repo gate only; the trust gate is unaffected because it uses bidirectional verification.
+1. `git rev-parse --git-common-dir` honors `.git/commondir` blindly. A directory with a crafted `commondir` file can claim any common dir for the same-repo gate, so auto-approval fires when `cd <evil>` happens from any CWD whose own common dir matches the spoof — i.e., from a trusted main repo or, since the worktree-trust change, any verified worktree of that main. The trust gate itself is unaffected because it uses bidirectional verification; only the cd-target check is spoofable.
 2. Pattern gate cd-path admits command substitution. Double-quoted and unquoted cd target alternatives allow `$(...)` and backtick expansion.
 3. Pattern gate is prefix-only. Anything after `git <cmd>` is unchecked — `cd /trusted && git status && <anything>` passes.
 4. No git subcommand allowlisting. `git push`, `git config`, `git reset --hard` are auto-approved equally with `git status`.

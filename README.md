@@ -15,15 +15,12 @@ No more "Compound commands with cd and git require approval to prevent bare repo
 
 ### Install
 
-```bash
-claude plugin add /path/to/i-said-yes
+```
+/plugin marketplace add seankao31/i-said-yes
+/plugin install i-said-yes
 ```
 
-Or run with it temporarily:
-
-```bash
-claude --plugin-dir /path/to/i-said-yes
-```
+Then run `/reload-plugins` to apply.
 
 ### Usage
 

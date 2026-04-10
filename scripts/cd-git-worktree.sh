@@ -42,8 +42,12 @@ cd_git_resolve_main_repo() {
 
   [ -z "$gitdir" ] && return 1
 
+  # Resolve gitdir relative to the .git file's directory. Git writes relative
+  # gitdir entries when worktree.useRelativePaths=true or `git worktree add
+  # --relative-paths` is used (git 2.48+); resolving via the hook's own CWD
+  # would silently misclassify those worktrees.
   local gitdir_real
-  gitdir_real=$(realpath "$gitdir" 2>/dev/null) || return 1
+  gitdir_real=$(cd "$dir" 2>/dev/null && realpath "$gitdir" 2>/dev/null) || return 1
 
   # Shape check: the gitdir must look like .../worktrees/<name>. Without this
   # gate, a gitfile claiming "gitdir: /any/path" would hand back that path as

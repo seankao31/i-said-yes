@@ -99,6 +99,30 @@ verify() {
   assert_output "$(realpath "$TEST_TEMP/fake")"
 }
 
+@test "resolve: .git gitfile with a relative gitdir is interpreted relative to the gitfile's directory" {
+  # Mirrors the on-disk shape git writes when worktree.useRelativePaths=true
+  # (git 2.48+). The hook's CWD is deliberately irrelevant — the relative
+  # gitdir must be resolved against the directory holding the .git file.
+  local main="$TEST_TEMP/main"
+  create_git_repo "$main"
+  mkdir -p "$main/.git/worktrees/w1"
+  local wt="$TEST_TEMP/wt"
+  mkdir -p "$wt"
+  printf 'gitdir: ../main/.git/worktrees/w1\n' > "$wt/.git"
+
+  # Invoke with the shell's CWD set to a directory where the relative path
+  # would NOT resolve correctly, to prove the function does not rely on it.
+  run bash -c '
+    set -euo pipefail
+    source "$1"
+    cd "$2"
+    cd_git_resolve_main_repo "$3"
+  ' _ "$LIB" "$TEST_TEMP" "$wt"
+
+  assert_success
+  assert_output "$(realpath "$main")"
+}
+
 @test "resolve: bare main repo with a worktree returns the bare repo path" {
   local bare="$TEST_TEMP/project.git"
   git init --bare --quiet "$bare"

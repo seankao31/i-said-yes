@@ -78,9 +78,9 @@ A naive worktree fallback could ask `git rev-parse --git-common-dir` from CWD an
 
 Ephemeral worktree paths (e.g. `/private/tmp/cc-worktree-abc`) become dead entries in the trust file once the worktree is cleaned up. Main repo paths are stable and cover all current and future worktrees. When CWD is a worktree, the hook resolves to the main and offers that.
 
-### Why the offer-trust hook does not bidirectionally verify
+### Why the offer-trust hook bidirectionally verifies worktree claims
 
-It is a UX suggestion, not a security decision — the user is the final arbiter when they accept or reject the trust offer. Unverified gitfile parsing (with the shape check) is enough to derive a useful suggestion, and skipping the subprocess avoids unnecessary work on every cd+git PostToolUse event.
+The offer hook would be a pure UX decision if it only chose which path to suggest. The trap: it also decides when to *stay silent*. A directory with a stale or crafted `.git` gitfile that merely claims to be a worktree of a trusted main would — without verification — be silently suppressed by the already-trusted check while the approve hook (which does verify) continued to reject auto-approval. The user would be stranded, approving prompts manually with no way back. Verifying the claim before using the derived main eliminates the trap: legitimate worktrees of trusted mains still get a silent exit, stale or crafted gitfiles fall back to offering the CWD path so the user can make a deliberate choice.
 
 ### Env sanitization on the worktree-list call
 

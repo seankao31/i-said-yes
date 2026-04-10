@@ -32,7 +32,18 @@ CWD_RESOLVED=$(realpath "$CWD" 2>/dev/null) || exit 0
 # Resolve CWD to the main repo it belongs to. cd_git_resolve_main_repo returns
 # CWD itself for a main repo and the derived main for a worktree. Falling back
 # to CWD preserves behavior for shapes it does not recognize.
+#
+# When CWD is a worktree, verify the derived main bidirectionally before
+# using it. Without this check, a stale or crafted .git gitfile that merely
+# claims a trusted main would redirect the offer to that main and — worse —
+# suppress the offer entirely on the already-trusted path, stranding the
+# user because the approve hook (which does verify) still rejects.
 OFFER_PATH=$(cd_git_resolve_main_repo "$CWD_RESOLVED")
+if [ -n "$OFFER_PATH" ] && [ "$OFFER_PATH" != "$CWD_RESOLVED" ]; then
+  if ! cd_git_verify_worktree "$CWD_RESOLVED" "$OFFER_PATH"; then
+    OFFER_PATH="$CWD_RESOLVED"
+  fi
+fi
 [ -z "$OFFER_PATH" ] && OFFER_PATH="$CWD_RESOLVED"
 
 # Already-trusted check runs against the offer path, not the original CWD,

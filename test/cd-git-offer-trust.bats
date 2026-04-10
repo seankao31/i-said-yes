@@ -231,6 +231,32 @@ run_script() {
   assert_output ""
 }
 
+@test "stale gitfile claiming a trusted main does not silently suppress the offer" {
+  # If a directory's .git gitfile claims to belong to a trusted main but the
+  # claim does not round-trip through the main's git worktree list, the
+  # PreToolUse hook will continue to reject auto-approval. Silently
+  # suppressing the PostToolUse offer in that case strands the user with no
+  # way to either get auto-approval or be offered a recoverable trust
+  # decision — so the hook must still emit an offer, falling back to CWD.
+  local main="$TEST_TEMP/project"
+  create_git_repo "$main"
+  trust_project "$main"
+  mkdir -p "$main/.git/worktrees/fake-w"
+  local evil="$TEST_TEMP/evil"
+  mkdir -p "$evil"
+  printf 'gitdir: %s/.git/worktrees/fake-w\n' "$main" > "$evil/.git"
+
+  local output
+  output=$(hook_input "Bash" "cd \"$evil\" && git status" "$evil" | "$SCRIPT")
+  local context
+  context=$(echo "$output" | jq -r '.hookSpecificOutput.additionalContext')
+  assert [ -n "$context" ]
+
+  local evil_real
+  evil_real=$(realpath "$evil")
+  [[ "$context" == *"$evil_real"* ]]
+}
+
 @test "untrusted main repo: offer still contains the main repo path (regression)" {
   local main="$TEST_TEMP/project"
   create_git_repo "$main"

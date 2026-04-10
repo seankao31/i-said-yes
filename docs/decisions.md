@@ -70,6 +70,38 @@ The hook entries in `hooks.json` intentionally omit the `if` field. This is not 
 
 `${CLAUDE_PLUGIN_DATA}` and `${CLAUDE_PLUGIN_ROOT}` are available both as string substitutions in JSON configs and as exported environment variables inside hook script subprocesses. The plugin uses environment variables in scripts and string substitutions in hooks.json.
 
+### Worktree trust: bidirectional verification
+
+A naive worktree fallback could ask `git rev-parse --git-common-dir` from CWD and trust the answer. That's spoofable — any directory can plant a `.git/commondir` file claiming any common dir. The trust gate instead asks the trusted main repo's own `git worktree list` to confirm the suspect directory is a registered worktree. The attacker controls their own directory, not files inside a trusted main's `.git/worktrees/`, so they cannot forge a registration.
+
+### Why the offer-trust hook offers the main repo path
+
+Ephemeral worktree paths (e.g. `/private/tmp/cc-worktree-abc`) become dead entries in the trust file once the worktree is cleaned up. Main repo paths are stable and cover all current and future worktrees. When CWD is a worktree, the hook resolves to the main and offers that.
+
+### Why the offer-trust hook does not bidirectionally verify
+
+It is a UX suggestion, not a security decision — the user is the final arbiter when they accept or reject the trust offer. Unverified gitfile parsing (with the shape check) is enough to derive a useful suggestion, and skipping the subprocess avoids unnecessary work on every cd+git PostToolUse event.
+
+### Env sanitization on the worktree-list call
+
+`git worktree list` is only trustworthy if it reflects the on-disk state of the main repo. `GIT_DIR`, `GIT_COMMON_DIR`, `GIT_WORK_TREE`, `GIT_CEILING_DIRECTORIES`, and `GIT_DISCOVERY_ACROSS_FILESYSTEM` can all redirect git's discovery. If inherited from upstream, they would defeat the bidirectional check. The `env -u ...` prefix strips them only for this call.
+
+### Trust gate: path check first, worktree fallback second
+
+The path check is subprocess-free and handles the common case (Claude operating in a regularly-trusted main repo). The worktree fallback only runs on a path-check miss, and short-circuits without invoking git unless the resolved main is itself trusted. No new cost in the common case.
+
+## Discoveries
+
+### Known limitations
+
+The plugin's threat model assumes Claude itself is generating commands in a trusted user environment, not a malicious third party actively probing the trust gate. The following are known weaknesses against an active attacker; they are accepted because fixing them would not measurably help against the assumed threat.
+
+1. `git rev-parse --git-common-dir` honors `.git/commondir` blindly. A directory with a crafted `commondir` file can claim any common dir for the same-repo gate. Affects the same-repo gate only; the trust gate is unaffected because it uses bidirectional verification.
+2. Pattern gate cd-path admits command substitution. Double-quoted and unquoted cd target alternatives allow `$(...)` and backtick expansion.
+3. Pattern gate is prefix-only. Anything after `git <cmd>` is unchecked — `cd /trusted && git status && <anything>` passes.
+4. No git subcommand allowlisting. `git push`, `git config`, `git reset --hard` are auto-approved equally with `git status`.
+5. The hook's non-worktree git invocations honor `GIT_*` environment variables. Only the worktree-list call sanitizes them.
+
 ## Prior prototype
 
 The original prototype hooks were at `~/.claude/hooks/` and registered in `~/.claude/settings.json`. Those hook registrations have been removed — the plugin replaces them. The prototype scripts remain at `~/.claude/hooks/` as reference but are inactive.

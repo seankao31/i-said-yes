@@ -43,6 +43,10 @@ The first time a cd+git command runs in a project, Claude asks if you want to tr
 
 If any gate fails, Claude Code's normal permission prompt takes over.
 
+### Worktrees
+
+Trust a project once and its git worktrees come along for free. When Claude Code operates from inside a worktree, the plugin resolves the worktree to its main repo and asks that main repo to confirm the worktree is really one of its own — so you only ever trust the main repo path, never the ephemeral worktree path.
+
 ## Trust storage
 
 Trusted projects are stored in `~/.claude/plugins/data/{plugin-id}/cd-git-trusted-projects.json` — a JSON array of absolute paths. This file lives in Claude Code's plugin data directory, outside any project's reach.

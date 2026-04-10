@@ -26,11 +26,13 @@ i-said-yes/
 ├── scripts/
 │   ├── cd-git-approve.sh           # PreToolUse: pattern + trust + same-repo gates
 │   ├── cd-git-offer-trust.sh       # PostToolUse: offer to trust untrusted projects
-│   └── cd-git-trust.sh             # Adds a project path to the cd+git trust list
+│   ├── cd-git-trust.sh             # Adds a project path to the cd+git trust list
+│   └── cd-git-worktree.sh          # Sourced library: worktree resolution and verification
 ├── test/
 │   ├── cd-git-approve.bats         # Three-gate approval logic
 │   ├── cd-git-offer-trust.bats     # Trust offer detection
 │   ├── cd-git-trust.bats           # Trust list manipulation
+│   ├── cd-git-worktree.bats        # Worktree resolution and verification library
 │   ├── smoke.bats                  # Bats infrastructure smoke test
 │   └── test_helper.bash            # Shared setup, teardown, and helpers
 ├── docs/
@@ -55,9 +57,21 @@ cd+git trust list: `${CLAUDE_PLUGIN_DATA}/cd-git-trusted-projects.json` — a JS
 
 All three must pass for auto-approval. Any failure defers to Claude Code's normal permission prompt.
 
-1. **Trust gate** — Is the project in the trust list? Trust is stored in user-scoped plugin data, outside any project's reach. A malicious repo cannot grant itself trust.
+1. **Trust gate** — Is the project in the trust list? Trust is stored in user-scoped plugin data, outside any project's reach. A malicious repo cannot grant itself trust. The trust check accepts both direct path matches and verified worktrees of trusted main repos (see "Worktree support" below).
 2. **Pattern gate** — Does the command match a known-safe compound pattern? Only specific patterns are approved, not arbitrary compound commands.
 3. **Same-repo gate** — Does `git rev-parse --git-common-dir` match between the cd target and the project root? Prevents auto-approving cd into nested malicious repos, submodules with untrusted code, or unrelated repositories.
+
+### Worktree support
+
+When CWD is a git worktree (its `.git` is a gitfile, not a directory), the trust gate falls back to:
+
+1. Parsing CWD's `.git` gitfile directly to derive the claimed main repo path (a shape check rejects gitfiles that do not live under `.../worktrees/<name>`).
+2. Checking that the derived main repo path is in the trust list — equality or subdirectory of a trusted ancestor.
+3. Running `git worktree list --porcelain` from the trusted main with sanitized environment (`GIT_DIR`, `GIT_COMMON_DIR`, `GIT_WORK_TREE`, `GIT_CEILING_DIRECTORIES`, `GIT_DISCOVERY_ACROSS_FILESYSTEM` unset) and confirming CWD is listed.
+
+All three steps must succeed. The check is bidirectional: the suspect directory claims a main, and the trusted main must independently confirm the claim. This means trusting the main repo path covers all of its current and future worktrees without any extra configuration.
+
+The offer-trust hook uses the same gitfile resolution (but not the bidirectional verification) to surface the main repo path instead of the ephemeral worktree path when Claude asks the user whether to trust a project. Unverified parsing is sufficient there — the user is the final arbiter.
 
 ## Trust offer flow (PostToolUse)
 
@@ -72,7 +86,7 @@ When a cd+git command completes in an untrusted project:
 When a cd+git command is about to run in a trusted project:
 
 1. Pattern gate: regex match against `^cd <path> && git <cmd>`
-2. Trust gate: check trust list — project path or ancestor must be listed
+2. Trust gate: project path or ancestor listed in trust file — or CWD is a verified worktree of such a main repo (see "Worktree support")
 3. Same-repo gate: compare `--git-common-dir` between cd target and cwd
 4. Output `permissionDecision: "allow"` if all pass
 

@@ -75,7 +75,7 @@ No git subprocess, no verification. Only `realpath` and shell file tests. Used b
 
 2. Read the gitfile, first line only. Require the literal prefix `gitdir: ` (8 chars including the space). Extract everything after the prefix up to the first newline. Reject empty content.
 
-3. Canonicalize the extracted path: `gitdir_real = realpath <gitdir>`. Reject on failure.
+3. Canonicalize the extracted path *relative to the directory holding the `.git` file*: `gitdir_real = (cd <dir> && realpath <gitdir>)`. Reject on failure. The cd matters: git writes relative gitdir entries when `worktree.useRelativePaths=true` or `git worktree add --relative-paths` is used (git 2.48+), and those must be resolved against the gitfile's directory, not the hook's CWD.
 
 4. **Shape check:** require `basename $(dirname "$gitdir_real") == "worktrees"`. The gitdir path must look like `.../worktrees/<name>`. Reject anything else. This step is the critical safeguard against a gitfile that claims `gitdir: /any/path/the/attacker/wants` — without it, the function would hand back arbitrary paths.
 
@@ -186,6 +186,11 @@ CWD_RESOLVED = realpath CWD
 main_repo = cd_git_resolve_main_repo "$CWD_RESOLVED"
 offer_path = main_repo if non-empty, else CWD_RESOLVED
 
+# Verify worktree claim before using the derived main (NEW)
+if main_repo is non-empty AND main_repo != CWD_RESOLVED:
+    if not cd_git_verify_worktree "$CWD_RESOLVED" "$main_repo":
+        offer_path = CWD_RESOLVED
+
 # Already-trusted check (EXTENDED — checks offer_path, not CWD)
 for each tp in trust file:
     tp = tilde-expand tp
@@ -208,7 +213,7 @@ emit additionalContext with offer_path substituted
 - The embedded trust command Claude runs to add to the list.
 - Early exits for non-Bash tools, non-matching patterns, empty CWD.
 
-The offer-trust hook deliberately does not call `cd_git_verify_worktree`. It is a UX suggestion, not a security decision; the user is the final arbiter. Unverified gitfile parsing is sufficient to derive a useful offer.
+**Design vs implementation note.** This design originally called for the offer-trust hook to skip `cd_git_verify_worktree` on the theory that offer emission is a UX decision, not a security one. During implementation (codex adversarial review) we realized the hook also decides when to *stay silent*: a stale or crafted gitfile that merely claimed a trusted main would silently suppress all offers while the approve hook (which does verify) continued to reject auto-approval, stranding the user. The shipped hook therefore runs bidirectional verification before accepting the derived main as the offer path. Legitimate worktrees of trusted mains still exit silently; stale or crafted gitfiles fall back to offering CWD so the user can make a deliberate choice. See `docs/decisions.md` for the current decision record.
 
 ## Testing strategy
 

@@ -179,3 +179,68 @@ run_script() {
   assert_success
   assert_output ""
 }
+
+# --- Worktree awareness ---
+
+@test "worktree of untrusted main: offer contains main repo path, not worktree path" {
+  local main="$TEST_TEMP/project"
+  create_git_repo "$main"
+  local wt="$TEST_TEMP/wt"
+  make_worktree "$main" "$wt"
+
+  local output
+  output=$(hook_input "Bash" "cd \"$wt\" && git status" "$wt" | "$SCRIPT")
+  local context
+  context=$(echo "$output" | jq -r '.hookSpecificOutput.additionalContext')
+
+  local main_real wt_real
+  main_real=$(realpath "$main")
+  wt_real=$(realpath "$wt")
+
+  [[ "$context" == *"$main_real"* ]]
+  [[ "$context" != *"$wt_real"* ]]
+}
+
+@test "worktree of already-trusted main: silent exit" {
+  local main="$TEST_TEMP/project"
+  create_git_repo "$main"
+  trust_project "$main"
+  local wt="$TEST_TEMP/wt"
+  make_worktree "$main" "$wt"
+
+  local input
+  input=$(hook_input "Bash" "cd \"$wt\" && git status" "$wt")
+  run_script "$input"
+  assert_success
+  assert_output ""
+}
+
+@test "worktree of main under a trusted ancestor: silent exit" {
+  local workspace="$TEST_TEMP/workspace"
+  mkdir -p "$workspace"
+  trust_project "$workspace"
+  local main="$workspace/project"
+  create_git_repo "$main"
+  local wt="$TEST_TEMP/wt"
+  make_worktree "$main" "$wt"
+
+  local input
+  input=$(hook_input "Bash" "cd \"$wt\" && git status" "$wt")
+  run_script "$input"
+  assert_success
+  assert_output ""
+}
+
+@test "untrusted main repo: offer still contains the main repo path (regression)" {
+  local main="$TEST_TEMP/project"
+  create_git_repo "$main"
+
+  local output
+  output=$(hook_input "Bash" "cd \"$main\" && git status" "$main" | "$SCRIPT")
+  local context
+  context=$(echo "$output" | jq -r '.hookSpecificOutput.additionalContext')
+
+  local main_real
+  main_real=$(realpath "$main")
+  [[ "$context" == *"$main_real"* ]]
+}

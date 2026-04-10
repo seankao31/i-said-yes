@@ -3,19 +3,18 @@
   "owner": {
     "name": "Yi-Hsiang (Sean) Kao"
   },
-  "metadata": {
-    "pluginRoot": "./plugins"
-  },
+  "description": "Marketplace for the i-said-yes Claude Code plugin",
+  "version": "0.1.0",
   "plugins": [
     {
       "name": "i-said-yes",
-      "source": "./plugins/i-said-yes",
       "description": "Remembers trust decisions for commands. Approve once, auto-approve forever.",
       "version": "0.1.0",
       "author": {
         "name": "Yi-Hsiang (Sean) Kao"
       },
-      "license": "MIT"
+      "license": "MIT",
+      "source": "./"
     }
   ]
 }

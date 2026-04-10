@@ -102,8 +102,3 @@ The plugin is an alternative to `claude --dangerously-skip-permissions` for user
 4. No git subcommand allowlisting. `git push`, `git config`, `git reset --hard` are auto-approved equally with `git status`.
 5. The hook's non-worktree git invocations honor `GIT_*` environment variables. Only the worktree-list call sanitizes them.
 
-## Prior prototype
-
-The original prototype hooks were at `~/.claude/hooks/` and registered in `~/.claude/settings.json`. Those hook registrations have been removed — the plugin replaces them. The prototype scripts remain at `~/.claude/hooks/` as reference but are inactive.
-
-Prototype discovery notes: `~/.claude/skills/capture-decisions/cd-git-hook-discoveries.md`

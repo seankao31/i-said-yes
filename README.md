@@ -37,8 +37,8 @@ Say yes. That's it — future cd+git commands in that project are auto-approved.
 
 The first time a cd+git command runs in a project, Claude asks if you want to trust it. Say yes, and future cd+git commands in that project are auto-approved — as long as they pass three security gates:
 
-1. **Trust gate** — Is this project in your trust list?
-2. **Pattern gate** — Is this a known-safe command pattern (`cd <path> && git <cmd>`)?
+1. **Pattern gate** — Is this a known-safe command pattern (`cd <path> && git <cmd>`)?
+2. **Trust gate** — Is this project in your trust list?
 3. **Same-repo gate** — Does `git rev-parse --git-common-dir` match between the cd target and the project root? This catches cd into nested malicious repos, submodules, or unrelated repositories.
 
 If any gate fails, Claude Code's normal permission prompt takes over.
@@ -55,6 +55,7 @@ Trusted projects are stored in `~/.claude/plugins/data/{plugin-id}/cd-git-truste
 
 - A malicious repo **cannot** grant itself trust — the trust list lives in user-scoped plugin data.
 - Nested repos, submodules, and unrelated repositories are **not** auto-approved — the same-repo gate catches them using `git rev-parse --git-common-dir`.
+- Spoofed worktree gitfiles are **rejected** — the plugin bidirectionally verifies any worktree claim against `git worktree list` on the trusted main repo before granting trust.
 - Only specific compound patterns are approved, not arbitrary commands.
 
 ## Development

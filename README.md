@@ -63,6 +63,16 @@ Trusted projects are stored in `~/.claude/plugins/data/{plugin-id}/cd-git-truste
 - Spoofed worktree gitfiles are **rejected** — the plugin bidirectionally verifies any worktree claim against `git worktree list` on the trusted main repo before granting trust.
 - Only specific compound patterns are approved, not arbitrary commands.
 
+## Known limitations
+
+The plugin is an alternative to `claude --dangerously-skip-permissions` for users already operating in trusted repositories. That baseline sets the threat model: Claude itself is generating commands in a trusted environment, not a malicious third party actively probing the trust gate. The following are known weaknesses against an active attacker; they are accepted because fixing them would not measurably raise the bar over the `--dangerously-skip-permissions` baseline.
+
+1. `git rev-parse --git-common-dir` honors `.git/commondir` blindly. A directory with a crafted `commondir` file can claim any common dir for the same-repo gate. The trust gate itself is unaffected (it uses bidirectional verification); only the cd-target check is spoofable.
+2. Pattern gate cd-path admits command substitution. Double-quoted and unquoted cd target alternatives allow `$(...)` and backtick expansion.
+3. Pattern gate is prefix-only. Anything after `git <cmd>` is unchecked — `cd /trusted && git status && <anything>` passes.
+4. No git subcommand allowlisting. `git push`, `git config`, `git reset --hard` are auto-approved equally with `git status`.
+5. The hook's non-worktree git invocations honor `GIT_*` environment variables. Only the worktree-list call sanitizes them.
+
 ## Development
 
 ```bash

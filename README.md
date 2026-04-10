@@ -33,6 +33,14 @@ Just use Claude Code normally. When you run a cd+git command in an untrusted pro
 
 Say yes. That's it — future cd+git commands in that project are auto-approved.
 
+## Supported commands
+
+| Pattern | Example |
+|---|---|
+| `cd <path> && git <cmd>` | `cd /my/project && git status` |
+
+That's currently it. The plugin is designed to support additional patterns in the future (cd+npm, cd+cargo, etc.), but only cd+git is implemented today.
+
 ## How it works
 
 The first time a cd+git command runs in a project, Claude asks if you want to trust it. Say yes, and future cd+git commands in that project are auto-approved — as long as they pass three security gates:

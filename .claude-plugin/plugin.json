@@ -1,6 +1,6 @@
 {
   "name": "i-said-yes",
-  "description": "Remembers trust decisions for commands. Approve once, auto-approve forever.",
+  "description": "Remembers trust decisions for cd+git commands. Approve once, auto-approve forever.",
   "version": "0.1.0",
   "author": {
     "name": "Yi-Hsiang (Sean) Kao"

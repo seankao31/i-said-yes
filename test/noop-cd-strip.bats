@@ -57,3 +57,58 @@ run_script() {
   assert_success
   assert_output ""
 }
+
+# --- No-op cd detected: rewrite ---
+
+@test "strips cd . && from compound command" {
+  local dir="$TEST_TEMP/mydir"
+  mkdir -p "$dir"
+
+  local output
+  output=$(hook_input "Bash" "cd . && echo hello" "$dir" | "$SCRIPT")
+  local cmd
+  cmd=$(echo "$output" | jq -r '.hookSpecificOutput.updatedInput.command')
+  assert_equal "$cmd" "echo hello"
+}
+
+@test "strips cd <absolute-cwd> && from compound command" {
+  local dir="$TEST_TEMP/mydir"
+  mkdir -p "$dir"
+
+  local output
+  output=$(hook_input "Bash" "cd \"$dir\" && git status" "$dir" | "$SCRIPT")
+  local cmd
+  cmd=$(echo "$output" | jq -r '.hookSpecificOutput.updatedInput.command')
+  assert_equal "$cmd" "git status"
+}
+
+@test "strips cd with single-quoted cwd path" {
+  local dir="$TEST_TEMP/mydir"
+  mkdir -p "$dir"
+
+  local output
+  output=$(hook_input "Bash" "cd '$dir' && npm install" "$dir" | "$SCRIPT")
+  local cmd
+  cmd=$(echo "$output" | jq -r '.hookSpecificOutput.updatedInput.command')
+  assert_equal "$cmd" "npm install"
+}
+
+@test "strips cd with unquoted cwd path" {
+  local dir="$TEST_TEMP/mydir"
+  mkdir -p "$dir"
+
+  local output
+  output=$(hook_input "Bash" "cd $dir && cargo build" "$dir" | "$SCRIPT")
+  local cmd
+  cmd=$(echo "$output" | jq -r '.hookSpecificOutput.updatedInput.command')
+  assert_equal "$cmd" "cargo build"
+}
+
+@test "strips cd with tilde path matching cwd" {
+  # Use $HOME as cwd since ~ expands to $HOME
+  local output
+  output=$(hook_input "Bash" "cd ~ && echo hello" "$HOME" | "$SCRIPT")
+  local cmd
+  cmd=$(echo "$output" | jq -r '.hookSpecificOutput.updatedInput.command')
+  assert_equal "$cmd" "echo hello"
+}

@@ -112,3 +112,76 @@ run_script() {
   cmd=$(echo "$output" | jq -r '.hookSpecificOutput.updatedInput.command')
   assert_equal "$cmd" "echo hello"
 }
+
+# --- Non-matching cd: no rewrite ---
+
+@test "does not strip cd to different directory" {
+  local dir="$TEST_TEMP/here"
+  local other="$TEST_TEMP/there"
+  mkdir -p "$dir" "$other"
+
+  local input
+  input=$(hook_input "Bash" "cd \"$other\" && echo hello" "$dir")
+  run_script "$input"
+  assert_success
+  assert_output ""
+}
+
+@test "does not strip cd to nonexistent path" {
+  local dir="$TEST_TEMP/here"
+  mkdir -p "$dir"
+
+  local input
+  input=$(hook_input "Bash" "cd /no/such/path && echo hello" "$dir")
+  run_script "$input"
+  assert_success
+  assert_output ""
+}
+
+@test "does not strip cd to subdirectory of cwd" {
+  local dir="$TEST_TEMP/parent"
+  mkdir -p "$dir/child"
+
+  local input
+  input=$(hook_input "Bash" "cd \"$dir/child\" && echo hello" "$dir")
+  run_script "$input"
+  assert_success
+  assert_output ""
+}
+
+# --- Chained compounds ---
+
+@test "strips only leading cd, preserves chained &&" {
+  local dir="$TEST_TEMP/mydir"
+  mkdir -p "$dir"
+
+  local output
+  output=$(hook_input "Bash" "cd \"$dir\" && echo a && echo b" "$dir" | "$SCRIPT")
+  local cmd
+  cmd=$(echo "$output" | jq -r '.hookSpecificOutput.updatedInput.command')
+  assert_equal "$cmd" "echo a && echo b"
+}
+
+# --- Output format ---
+
+@test "output includes hookEventName PreToolUse" {
+  local dir="$TEST_TEMP/mydir"
+  mkdir -p "$dir"
+
+  local output
+  output=$(hook_input "Bash" "cd . && echo hello" "$dir" | "$SCRIPT")
+  local event
+  event=$(echo "$output" | jq -r '.hookSpecificOutput.hookEventName')
+  assert_equal "$event" "PreToolUse"
+}
+
+@test "output does not include permissionDecision" {
+  local dir="$TEST_TEMP/mydir"
+  mkdir -p "$dir"
+
+  local output
+  output=$(hook_input "Bash" "cd . && echo hello" "$dir" | "$SCRIPT")
+  local decision
+  decision=$(echo "$output" | jq -r '.hookSpecificOutput.permissionDecision // "absent"')
+  assert_equal "$decision" "absent"
+}

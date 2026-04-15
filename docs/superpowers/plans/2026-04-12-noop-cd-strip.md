@@ -18,7 +18,7 @@
 - Create: `test/noop-cd-strip.bats`
 - Create: `scripts/noop-cd-strip.sh`
 
-- [ ] **Step 1: Create the test file with early-exit tests**
+- [x] **Step 1: Create the test file with early-exit tests**
 
 ```bash
 #!/usr/bin/env bats
@@ -82,7 +82,7 @@ run_script() {
 }
 ```
 
-- [ ] **Step 2: Create minimal script that exits silently**
+- [x] **Step 2: Create minimal script that exits silently**
 
 ```bash
 #!/bin/bash
@@ -108,12 +108,12 @@ Make it executable:
 chmod +x scripts/noop-cd-strip.sh
 ```
 
-- [ ] **Step 3: Run tests — all should pass (early exits)**
+- [x] **Step 3: Run tests — all should pass (early exits)**
 
 Run: `./node_modules/.bin/bats test/noop-cd-strip.bats`
 Expected: 6 tests, all pass
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add test/noop-cd-strip.bats scripts/noop-cd-strip.sh
@@ -128,7 +128,7 @@ git commit -m "Scaffold noop-cd-strip with early-exit tests"
 - Modify: `test/noop-cd-strip.bats`
 - Modify: `scripts/noop-cd-strip.sh`
 
-- [ ] **Step 1: Add failing tests for no-op cd rewrite**
+- [x] **Step 1: Add failing tests for no-op cd rewrite**
 
 Append to `test/noop-cd-strip.bats`:
 
@@ -189,12 +189,12 @@ Append to `test/noop-cd-strip.bats`:
 }
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `./node_modules/.bin/bats test/noop-cd-strip.bats`
 Expected: 5 new tests FAIL (script exits without output for all commands)
 
-- [ ] **Step 3: Implement rewrite logic**
+- [x] **Step 3: Implement rewrite logic**
 
 Replace the `exit 0` at the end of `scripts/noop-cd-strip.sh` with:
 
@@ -235,12 +235,12 @@ fi
 exit 0
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `./node_modules/.bin/bats test/noop-cd-strip.bats`
 Expected: 11 tests, all pass
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add test/noop-cd-strip.bats scripts/noop-cd-strip.sh
@@ -254,7 +254,7 @@ git commit -m "Implement no-op cd detection and rewrite via updatedInput"
 **Files:**
 - Modify: `test/noop-cd-strip.bats`
 
-- [ ] **Step 1: Add tests for cd to different directory (no rewrite)**
+- [x] **Step 1: Add tests for cd to different directory (no rewrite)**
 
 Append to `test/noop-cd-strip.bats`:
 
@@ -296,12 +296,12 @@ Append to `test/noop-cd-strip.bats`:
 }
 ```
 
-- [ ] **Step 2: Run tests to verify they pass**
+- [x] **Step 2: Run tests to verify they pass**
 
 Run: `./node_modules/.bin/bats test/noop-cd-strip.bats`
 Expected: 14 tests, all pass
 
-- [ ] **Step 3: Add chained compound command test**
+- [x] **Step 3: Add chained compound command test**
 
 Append to `test/noop-cd-strip.bats`:
 
@@ -320,12 +320,12 @@ Append to `test/noop-cd-strip.bats`:
 }
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `./node_modules/.bin/bats test/noop-cd-strip.bats`
 Expected: 15 tests, all pass
 
-- [ ] **Step 5: Add output format tests**
+- [x] **Step 5: Add output format tests**
 
 Append to `test/noop-cd-strip.bats`:
 
@@ -355,12 +355,12 @@ Append to `test/noop-cd-strip.bats`:
 }
 ```
 
-- [ ] **Step 6: Run tests to verify they pass**
+- [x] **Step 6: Run tests to verify they pass**
 
 Run: `./node_modules/.bin/bats test/noop-cd-strip.bats`
 Expected: 17 tests, all pass
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add test/noop-cd-strip.bats
@@ -374,7 +374,7 @@ git commit -m "Add non-matching, chained, and output format tests for noop-cd-st
 **Files:**
 - Modify: `hooks/hooks.json`
 
-- [ ] **Step 1: Update hooks.json to list noop-cd-strip first**
+- [x] **Step 1: Update hooks.json to list noop-cd-strip first**
 
 Replace the PreToolUse section in `hooks/hooks.json` with:
 
@@ -396,12 +396,12 @@ Replace the PreToolUse section in `hooks/hooks.json` with:
 ],
 ```
 
-- [ ] **Step 2: Run all existing tests to verify nothing broke**
+- [x] **Step 2: Run all existing tests to verify nothing broke**
 
 Run: `./node_modules/.bin/bats test/`
 Expected: All tests pass (existing cd-git-approve, cd-git-offer-trust, cd-git-trust, cd-git-worktree, smoke, and new noop-cd-strip)
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add hooks/hooks.json
@@ -414,17 +414,17 @@ git commit -m "Register noop-cd-strip hook before cd-git-approve in hooks.json"
 
 This task requires a live Claude Code session to verify end-to-end behavior.
 
-- [ ] **Step 1: Reload plugin**
+- [x] **Step 1: Reload plugin**
 
 In a Claude Code session, run `/reload-plugins` or restart.
 
-- [ ] **Step 2: Test no-op cd stripping**
+- [x] **Step 2: Test no-op cd stripping**
 
 Ask the agent to run `cd . && echo hello`. Verify:
 - The command that executes is `echo hello` (cd stripped)
 - Normal permission flow applies (no auto-approve from the hook)
 
-- [ ] **Step 3: Test hook ordering**
+- [x] **Step 3: Test hook ordering**
 
 Ask the agent to run `cd . && git status` in a trusted project. Verify:
 - The command that executes is `git status` (cd stripped by noop-cd-strip)
@@ -432,13 +432,13 @@ Ask the agent to run `cd . && git status` in a trusted project. Verify:
 
 If cd-git-approve sees the original input and auto-approves, note this as a follow-up: add an early-exit to cd-git-approve when cd target == cwd.
 
-- [ ] **Step 4: Test non-matching cd preserved**
+- [x] **Step 4: Test non-matching cd preserved**
 
 Ask the agent to run `cd /some/other/path && echo hello`. Verify:
 - The cd is NOT stripped (different directory)
 - Normal compound-command permission prompt appears
 
-- [ ] **Step 5: Commit any fixes**
+- [x] **Step 5: Commit any fixes**
 
 If the manual tests reveal issues, fix and commit. Otherwise, no action needed.
 
@@ -450,7 +450,7 @@ If the manual tests reveal issues, fix and commit. Otherwise, no action needed.
 - Modify: `docs/spec.md`
 - Modify: `README.md`
 
-- [ ] **Step 1: Add noop-cd-strip to spec.md**
+- [x] **Step 1: Add noop-cd-strip to spec.md**
 
 Add to the Plugin structure section in `docs/spec.md`, after the `cd-git-worktree.sh` entry:
 ```
@@ -476,16 +476,16 @@ Runs before cd-git-approve in hooks.json. When the cd is a no-op, the remaining 
 
 Add `noop-cd-strip.bats` to the test listing.
 
-- [ ] **Step 2: Update README.md**
+- [x] **Step 2: Update README.md**
 
 Add a brief mention in the README that the plugin also strips no-op cd prefixes from compound commands, simplifying them before permission evaluation.
 
-- [ ] **Step 3: Run all tests one final time**
+- [x] **Step 3: Run all tests one final time**
 
 Run: `./node_modules/.bin/bats test/`
 Expected: All tests pass
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add docs/spec.md README.md

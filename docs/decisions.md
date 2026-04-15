@@ -90,4 +90,10 @@ The offer hook would be a pure UX decision if it only chose which path to sugges
 
 The path check is subprocess-free and handles the common case (Claude operating in a regularly-trusted main repo). The worktree fallback only runs on a path-check miss, and short-circuits without invoking git unless the resolved main is itself trusted. No new cost in the common case.
 
+### `updatedInput` without `permissionDecision` rewrites and re-evaluates
 
+Returning `hookSpecificOutput.updatedInput` with no `permissionDecision` field causes Claude Code to replace the command AND run it through normal permission flow. This is distinct from `permissionDecision: "defer"` (which ignores `updatedInput`). Not documented in official Claude Code hooks docs; verified empirically 2026-04-12. The noop-cd-strip hook relies on this behavior.
+
+### Hooks in the same array see rewritten input
+
+When noop-cd-strip rewrites `cd . && git status` to `git status`, subsequent hooks in the same `hooks.json` array (like cd-git-approve) see the rewritten command, not the original. Verified empirically 2026-04-15. This means no early-exit is needed in cd-git-approve for no-op cds — it simply doesn't match a command that no longer starts with `cd`.

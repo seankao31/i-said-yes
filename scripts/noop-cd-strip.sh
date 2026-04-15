@@ -27,7 +27,7 @@ if [[ "$COMMAND" =~ ^cd[[:space:]]+(\"[^\"]+\"|\'[^\']+\'|[^[:space:]&]+)[[:spac
   # Expand ~ to $HOME (tilde is literal in JSON, not shell-expanded)
   TARGET="${TARGET/#\~/$HOME}"
 
-  # Resolve both paths
+  # Resolve both paths (cd into CWD first so relative targets like "." resolve correctly)
   CWD_RESOLVED=$(realpath "$CWD" 2>/dev/null) || exit 0
   TARGET_RESOLVED=$(cd "$CWD" 2>/dev/null && realpath "$TARGET" 2>/dev/null) || exit 0
 

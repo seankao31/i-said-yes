@@ -48,6 +48,8 @@ The first time a cd+git command runs in a project, Claude asks if you want to tr
 
 If any gate fails, Claude Code's normal permission prompt takes over.
 
+Before the gates run, the plugin also strips no-op `cd` prefixes from compound commands. If the `cd` target is the same as the current working directory, the `cd <path> &&` prefix is removed and the remaining command is evaluated normally — keeping the trust logic focused on what actually matters.
+
 ### Worktrees
 
 Trust a project once and its git worktrees come along for free. When Claude Code operates from inside a worktree, the plugin resolves the worktree to its main repo and asks that main repo to confirm the worktree is really one of its own — so you only ever trust the main repo path, never the ephemeral worktree path.

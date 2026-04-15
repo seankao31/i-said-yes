@@ -27,12 +27,14 @@ i-said-yes/
 │   ├── cd-git-approve.sh           # PreToolUse: pattern + trust + same-repo gates
 │   ├── cd-git-offer-trust.sh       # PostToolUse: offer to trust untrusted projects
 │   ├── cd-git-trust.sh             # Adds a project path to the cd+git trust list
-│   └── cd-git-worktree.sh          # Sourced library: worktree resolution and verification
+│   ├── cd-git-worktree.sh          # Sourced library: worktree resolution and verification
+│   └── noop-cd-strip.sh            # PreToolUse: strip no-op cd prefix from compounds
 ├── test/
 │   ├── cd-git-approve.bats         # Three-gate approval logic
 │   ├── cd-git-offer-trust.bats     # Trust offer detection
 │   ├── cd-git-trust.bats           # Trust list manipulation
 │   ├── cd-git-worktree.bats        # Worktree resolution and verification library
+│   ├── noop-cd-strip.bats          # No-op cd prefix stripping
 │   ├── smoke.bats                  # Bats infrastructure smoke test
 │   └── test_helper.bash            # Shared setup, teardown, and helpers
 ├── docs/
@@ -169,6 +171,19 @@ if mismatch: exit       # defer to normal prompt
 
 → output permissionDecision: "allow"
 ```
+
+## No-op cd strip (PreToolUse)
+
+When any compound command starts with `cd <path> &&`:
+
+```
+Pattern match: cd <path> && <rest>
+Resolve cd target relative to CWD
+if target == CWD:
+    return updatedInput: { command: <rest> }   (no permissionDecision)
+```
+
+Runs before cd-git-approve in hooks.json. When the cd is a no-op, the remaining command goes through normal permission evaluation — no trust gate, no pattern gate.
 
 ## Testing
 

@@ -35,7 +35,7 @@ Both hooks are registered in the same `hooks.json` entry, with `noop-cd-strip.sh
 }
 ```
 
-**Open question**: Does `cd-git-approve` see the rewritten input or the original? If rewritten, the separation is clean — `cd-git-approve` won't match a command that no longer starts with `cd`. If original, `cd-git-approve` would also fire and return `permissionDecision: "allow"`, auto-approving the rewritten command. In that case, an early-exit should be added to `cd-git-approve` when cd target == cwd. This will be tested empirically during implementation.
+**Resolved**: Manual testing (2026-04-15) confirmed that `cd-git-approve` sees the rewritten input. When noop-cd-strip rewrites `cd . && git status` to `git status`, cd-git-approve sees `git status` (no cd prefix) and does not match its pattern — the command goes through normal permission flow. No early-exit needed in cd-git-approve.
 
 ## Scope
 

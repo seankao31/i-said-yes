@@ -74,6 +74,7 @@ The plugin is an alternative to `claude --dangerously-skip-permissions` for user
 3. Pattern gate is prefix-only. Anything after `git <cmd>` is unchecked — `cd /trusted && git status && <anything>` passes.
 4. No git subcommand allowlisting. `git push`, `git config`, `git reset --hard` are auto-approved equally with `git status`.
 5. The hook's non-worktree git invocations honor `GIT_*` environment variables. Only the worktree-list call sanitizes them.
+6. No-op cd stripping is not fully semantics-free. `cd .` updates `OLDPWD` and can change the logical `PWD` spelling when symlinks are involved. Stripping it alters these side effects. In practice this is harmless because Claude Code's Bash tool does not persist shell state between invocations.
 
 ## Development
 
